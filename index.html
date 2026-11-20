@@ -89,7 +89,7 @@ header{padding:calc(14px + env(safe-area-inset-top)) 0 10px;display:flex;align-i
 .btn-ghost{flex:none;width:56px;background:var(--card2);color:var(--txt);border:1px solid var(--line);font-size:19px}
 
 /* 快捷跳转行 */
-.jumprow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;width:100%}
+.jumprow{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:7px;margin-top:9px;width:100%}
 .jbtn{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:12px 8px;
   color:var(--txt);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:5px;overflow:hidden;white-space:nowrap}
@@ -191,9 +191,36 @@ nav button.on{color:var(--acc)}
 .full .fclose{position:absolute;top:calc(18px + env(safe-area-inset-top));right:20px;width:40px;height:40px;
   border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:18px}
 
+
+/* ===== 节拍指挥台 ===== */
+.btitle{font-size:14px;color:var(--dim);letter-spacing:2px;margin-bottom:14px}
+.bring{width:min(62vw,240px);height:min(62vw,240px);border-radius:50%;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;position:relative;
+  border:3px solid var(--line);transition:border-color .1s,box-shadow .15s;margin-bottom:20px}
+.bring.tick{border-color:var(--acc);box-shadow:0 0 0 10px rgba(255,45,85,.13),0 0 50px rgba(255,45,85,.4)}
+.bring.hot{border-color:var(--ok);box-shadow:0 0 0 10px rgba(18,214,124,.14),0 0 50px rgba(18,214,124,.42)}
+.bnum{font-size:min(23vw,90px);font-weight:800;line-height:1;color:var(--txt);
+  font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.blbl{font-size:11px;color:var(--dim2);letter-spacing:3px;margin-top:5px}
+.bseq{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);
+  margin-bottom:18px;flex-wrap:wrap;justify-content:center}
+.bseq .si{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:4px 8px;white-space:nowrap}
+.bseq .sa{color:var(--dim2);font-size:10px}
+.bhint{font-size:12.5px;color:var(--dim);margin-bottom:20px;text-align:center;line-height:1.7;max-width:300px}
+.bgo{padding:19px 46px;border-radius:50px;font-size:17px;font-weight:800;font-family:inherit;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;
+  box-shadow:0 10px 40px rgba(255,45,85,.45);cursor:pointer}
+.bgo:active{transform:scale(.96)}
+.bgo.running{background:var(--card2);color:var(--txt);box-shadow:none;border:1px solid var(--line)}
+.bops{display:flex;gap:10px;margin-top:16px}
+.bop{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 20px;
+  color:var(--dim);font-size:12.5px;font-family:inherit;cursor:pointer}
+.bop:active{transform:scale(.96)}
+.bstat{margin-top:18px;font-size:11.5px;color:var(--dim2);text-align:center;line-height:1.9;
+  font-variant-numeric:tabular-nums;min-height:40px}
+
 /* 帮助内容 */
-.doc h4{font-size:13px;margin:18px 0 8px;color:var(--txt);font-weight:700}
-.doc h4:first-child{margin-top:0}
+.doc h4{font-size:13px;margin:18px 0 8px;color:var(--txt);font-weight:700}.doc h4:first-child{margin-top:0}
 .doc p,.doc li{font-size:12.5px;line-height:1.85;color:var(--dim);margin:0 0 8px}
 .doc ol,.doc ul{padding-left:19px;margin:0 0 10px}
 .doc li{margin-bottom:6px}
@@ -320,6 +347,17 @@ nav button.on{color:var(--acc)}
       </div>
     </div>
     <div class="field">
+      <label>节拍间隔（听口令模式）</label>
+      <select id="sBeat">
+        <option value="1200">1.2 秒 · 手快</option>
+        <option value="1500">1.5 秒 · 较快</option>
+        <option value="2000" selected>2.0 秒 · 标准</option>
+        <option value="2500">2.5 秒 · 从容</option>
+        <option value="3000">3.0 秒 · 稳</option>
+      </select>
+      <div class="hint">每响一次就是一轮：购物袋→券→看→返回。跟不上就调大。</div>
+    </div>
+    <div class="field">
       <label>时间校准源</label>
       <select id="sCalib">
         <option value="auto" selected>自动（网络校时）</option>
@@ -349,6 +387,32 @@ nav button.on{color:var(--acc)}
   <button class="fgo" id="fGo" onclick="doJump()">打开 App ↗</button>
 </div>
 
+<!-- 节拍指挥台（听口令模式） -->
+<div class="full" id="beat">
+  <button class="fclose" onclick="closeBeat()">✕</button>
+  <div class="btitle" id="bTitle">节拍指挥台</div>
+  <div class="bring" id="bRing">
+    <span class="bnum" id="bNum">0</span>
+    <span class="blbl" id="bLbl">轮</span>
+  </div>
+  <div class="bseq" id="bSeq">
+    <span class="si">① 点购物袋</span>
+    <span class="sa">→</span>
+    <span class="si">② 点券</span>
+    <span class="sa">→</span>
+    <span class="si">③ 看按钮</span>
+    <span class="sa">→</span>
+    <span class="si">④ 返 回</span>
+  </div>
+  <div class="bhint" id="bHint">听到口令就点下面的「开始数拍」</div>
+  <button class="bgo" id="bGo" onclick="beatTap()">开 始 数 拍</button>
+  <div class="bops">
+    <button class="bop" onclick="beatMiss()">这一轮空了</button>
+    <button class="bop" onclick="beatHit()">抢到了！</button>
+  </div>
+  <div class="bstat" id="bStat"></div>
+</div>
+
 <div id="toast"></div>
 <input type="file" id="fileIn" accept=".json" style="display:none">
 
@@ -362,7 +426,7 @@ Object.keys(window.PLATFORMS).forEach(k=>{
   const p=window.PLATFORMS[k];
   PLATS[k]={name:p.name,ico:p.icon,scheme:p.scheme,color:p.color,prep:p.prep,steps:p.steps};
 });
-let items=[], curId=null, S={preopen:5,sound:1,vib:1,calib:'auto'}, clockOffset=0;
+let items=[], curId=null, S={preopen:5,sound:1,vib:1,calib:'auto',beat:2000}, clockOffset=0;
 let editId=null, editPlat='douyin';
 
 function load(){
@@ -447,7 +511,8 @@ function renderHero(it,t){
   const st=statusOf(it), left=it.time-t, P=PLATS[it.plat]||PLATS.other;
   let body;
   if(!it.time){
-    body=`<div class="cd" style="opacity:.3"><span class="num">--</span><span class="sep">:</span><span class="num">--</span></div>
+    body=`<div class="cd" style="opacity:.35;margin-top:26px">
+        <span style="font-size:clamp(30px,9vw,52px);color:var(--dim2);letter-spacing:6px">· · : · ·</span></div>
       <div class="cdunits"><span style="letter-spacing:0;color:var(--dim)">还没设定开抢时间</span></div>
       <div style="margin-top:16px"><button class="btn btn-main" onclick="openEdit('${it.id}')">设定开抢时间</button></div>`;
   }else if(left>0){
@@ -488,8 +553,9 @@ function renderHero(it,t){
       ${it.time?`<button class="btn btn-ghost" onclick="startFull('${it.id}')">⏱</button>`:''}
     </div>
     <div class="jumprow">
-      <button class="jbtn" onclick="copyLink('${it.id}')">📋 复制链接 <small>手动粘贴</small></button>
-      <button class="jbtn" onclick="editItem('${it.id}')">✏️ 编辑 <small>改时间/名称</small></button>
+      <button class="jbtn" onclick="openBeat('${it.id}')" style="background:rgba(255,45,85,.13);border-color:rgba(255,45,85,.4);color:#ff7089">🥁 节拍抢购 <small style="color:#ff7089;opacity:.75">听口令刷</small></button>
+      <button class="jbtn" onclick="copyLink('${it.id}')">📋 复制链接</button>
+      <button class="jbtn" onclick="editItem('${it.id}')">✏️ 编辑</button>
     </div>`;
 }
 function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -512,6 +578,7 @@ function renderList(sorted,t){
       <div class="imeta">
         <span class="plat">${P.ico} ${P.name}</span>
         <span class="m">🕐 ${it.time?fmtFull(it.time):'--'}</span>
+        ${it.result==='success'?'<span class="tag tag-done" style="font-size:9.5px;padding:2px 7px">已抢到</span>':''}
         <span class="icd ${hot?'hot':''} ${left<0?'done':''}">${cd}</span>
       </div>
     </div>`;
@@ -638,6 +705,157 @@ function logTry(it,how){
   it.lastTry=now(); save();
 }
 
+/* ============ 节拍指挥台（听口令模式） ============
+   抖音直播间的券通常没有固定开售时间，是主播喊「上架」后才放出。
+   这时定点倒计时没用，真正的问题是：你手动反复点购物袋-点券-看-返回，
+   很难保持稳定节奏，容易漏货或点乱。
+
+   节拍台做的事：
+     · 用声音+圆环脉冲替你数拍，每一拍 = 完成一轮「购物袋→券→看→返回」
+     · 每拍有明确的声音（短促「哒」），你不用看屏幕也知道该点了
+     · 记录你每一轮的时间和空轮次数，抢完能看出哪一轮卡住了
+     · 一旦你点「抢到了」，立刻停拍并狂响提醒
+======================================================== */
+var BEAT = {
+  on:false, period:2000, timer:null, round:0, misses:0, startedAt:0,
+  itemId:null, marks:[], lastTick:0
+};
+
+function openBeat(id){
+  BEAT.itemId = id || curId;
+  BEAT.period = S.beat || 2000;
+  var it = items.find(function(x){return x.id===BEAT.itemId});
+  $('bTitle').textContent = it ? it.name : '节拍指挥台';
+  $('bNum').textContent = '0';
+  $('bLbl').textContent = '轮';
+  $('bSeq').style.opacity = 1;
+  $('bHint').innerHTML = '听到主播喊「上架 / 开抢」<br>立刻点下面的「开始数拍」';
+  $('bGo').textContent = '开 始 数 拍';
+  $('bGo').classList.remove('running');
+  $('bStat').textContent = '';
+  BEAT.round = 0; BEAT.misses = 0; BEAT.marks = []; BEAT.on = false;
+  $('beat').classList.add('on');
+  holdAwake();
+}
+function closeBeat(){
+  stopBeat();
+  $('beat').classList.remove('on');
+}
+function stopBeat(){
+  BEAT.on = false;
+  clearInterval(BEAT.timer); BEAT.timer = null;
+  var __r=document.getElementById('bRing'); if(__r)__r.classList.remove('tick','hot');
+}
+function startBeat(){
+  BEAT.on = true;
+  BEAT.startedAt = now();
+  BEAT.round = 0; BEAT.misses = 0; BEAT.marks = [];
+  $('bGo').textContent = '停 止';
+  $('bGo').classList.add('running');
+  $('bHint').innerHTML = '跟着「哒」的声音节奏走<br>每响一次就完成一轮：购物袋→券→看→返回';
+  // 立刻开始第一拍
+  tickBeat();
+  BEAT.timer = setInterval(tickBeat, BEAT.period);
+}
+function tickBeat(){
+  if(!BEAT.on) return;
+  BEAT.round++;
+  BEAT.lastTick = now();
+  BEAT.marks.push(BEAT.lastTick);
+  // 视觉脉冲
+  var ring = document.getElementById('bRing');
+  if(!ring) return;
+  ring.classList.add('tick');
+  setTimeout(function(){ring.classList.remove('tick')}, Math.min(400, BEAT.period*0.4));
+  // 声音：短促「哒」+ 每 5 拍重音
+  var heavy = BEAT.round % 5 === 0;
+  beatSound(heavy);
+  vibrate(heavy ? [70] : [38]);
+  // 数字
+  $('bNum').textContent = BEAT.round;
+  $('bLbl').textContent = '轮';
+  updateBeatStat();
+}
+function updateBeatStat(){
+  var el = $('bStat');
+  if(!BEAT.round){ el.textContent=''; return; }
+  var sec = (now() - BEAT.startedAt) / 1000;
+  var rate = BEAT.round / sec * 60;
+  var last = '';
+  if(BEAT.marks.length >= 2){
+    var iv = (BEAT.marks[BEAT.marks.length-1] - BEAT.marks[BEAT.marks.length-2]) / 1000;
+    last = '　本轮间隔 ' + iv.toFixed(2) + 's';
+  }
+  el.innerHTML = '已 ' + BEAT.round + ' 轮 · 用时 ' + sec.toFixed(0) + 's'
+    + '　空轮 ' + BEAT.misses + last
+    + '<br><span style="opacity:.6">节奏 ' + rate.toFixed(0) + ' 轮/分钟</span>';
+}
+/* 节拍音：不同频率区分普通拍与重音拍，不用外部音频 */
+function beatSound(heavy){
+  if(!S.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    var t = actx.currentTime;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = heavy ? 'triangle' : 'sine';
+    o.frequency.value = heavy ? 1320 : 880;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(heavy ? .34 : .2, t + .006);
+    g.gain.exponentialRampToValueAtTime(.001, t + (heavy ? .13 : .07));
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + .16);
+  }catch(e){}
+}
+function beatTap(){
+  if(BEAT.on){ stopBeat(); $('bGo').textContent='继 续'; $('bGo').classList.remove('running');
+    $('bHint').textContent='已暂停'; return; }
+  startBeat();
+}
+function beatMiss(){
+  BEAT.misses++;
+  updateBeatStat();
+  toast('第 ' + BEAT.round + ' 轮：没货，继续跟拍', 1200);
+}
+function beatHit(){
+  stopBeat();
+  var it = items.find(function(x){return x.id===BEAT.itemId});
+  if(it){
+    it.result = 'success';
+    it.successAt = now();
+    it.beatRounds = BEAT.round;
+    it.beatSeconds = Math.round((now()-BEAT.startedAt)/1000);
+    save();
+  }
+  $('bNum').textContent = '✓';
+  $('bLbl').textContent = '抢到了';
+  var __r2=document.getElementById('bRing'); if(__r2)__r2.classList.add('hot');
+  $('bHint').innerHTML = '<span style="color:var(--ok);font-weight:700">抢到了！马上去付款</span><br><span style="font-size:11px;opacity:.7">' +
+    BEAT.round + ' 轮 / ' + Math.round((now()-BEAT.startedAt)/1000) + ' 秒</span>';
+  $('bGo').textContent = '关 闭';
+  $('bGo').setAttribute('onclick','closeBeat()');
+  successSound();
+  vibrate([300,120,300,120,500]);
+  setTimeout(function(){ vibrate([300,120,300,120,500]); }, 900);
+}
+function successSound(){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    var notes = [880, 1100, 1320, 1760], t = actx.currentTime;
+    notes.forEach(function(f){
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(.3, t+.01);
+      g.gain.exponentialRampToValueAtTime(.001, t+.22);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t); o.stop(t+.25); t += .16;
+    });
+  }catch(e){}
+}
+function holdAwake(){ try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(function(l){window.__wl=l}); }catch(e){} }
+
 /* ============ 全屏倒数 ============ */
 let fullId=null, fullTimer=null, preopened=false;
 function startFull(id){
@@ -743,6 +961,7 @@ function testNotify(){
 function openSet(){
   $('sPreopen').value=String(S.preopen);
   $('sCalib').value=S.calib;
+  $('sBeat').value=String(S.beat||2000);
   bindChips('sndChips',S.sound,v=>{S.sound=v});
   bindChips('vibChips',S.vib,v=>{S.vib=v});
   openSheet('shSet');
@@ -759,6 +978,7 @@ function bindChips(id,val,cb){
 }
 function saveSet(){
   S.preopen=Number($('sPreopen').value); S.calib=$('sCalib').value;
+  S.beat=Number($('sBeat').value)||2000;
   saveS(); closeSheet('shSet'); toast('设置已保存');
 }
 function exportData(){
@@ -807,7 +1027,22 @@ function renderDoc(){
     <li>如果没跳过去，到 0 就立刻点 <b>「立即下单 ↗」</b>。</li>
   </ol>
 
-  <h4>③ 抖音直播间券的正确姿势</h4>
+  <h4>③ 听口令型：用「节拍抢购」</h4>
+  <div class="okbox">
+    <b>如果券没有固定开售时间，是主播喊了才上架</b><br>
+    那倒计时没用，你要做的是<b>持续反复刷购物袋</b>。这时点卡片上的
+    <b>「🥁 节拍抢购」</b>。
+  </div>
+  <ol>
+    <li>听到主播喊「上架 / 开抢」→ 立刻点<b>「开始数拍」</b>。</li>
+    <li>之后每响一声「哒」，你就完成一轮：<b>① 点购物袋 → ② 点券 → ③ 看按钮 → ④ 返回</b>。</li>
+    <li>没货就点「这一轮空了」，程序记录空轮数。</li>
+    <li>出现「立即购买」就点下去 → 抢到后点<b>「抢到了！」</b>，程序会狂响提醒。</li>
+    <li>每 5 拍有一个重音（更响），用重音判断自己有没有掉拍。</li>
+  </ol>
+  <p style="font-size:11px;color:var(--dim2)">节奏默认 2 秒一拍，和手动操作的极限速度接近。跟不上就把「每轮间隔」调大（在设置里）。</p>
+
+  <h4>④ 抖音直播间券的正确姿势</h4>
   <div class="warnbox">
     <b>关键：提前把链接在抖音里"预热"一遍</b><br>
     抢购前 10 分钟，先点一次「立即打开」，让抖音把券的页面缓存好。<br>
@@ -820,18 +1055,18 @@ function renderDoc(){
     <li><b>提前登录、提前绑好支付方式</b>，否则到支付页会卡在输密码。</li>
   </ol>
 
-  <h4>④ iPhone 提速的三个开关</h4>
+  <h4>⑤ iPhone 提速的三个开关</h4>
   <ul>
     <li><b>设置 → 辅助功能 → 触控 → 辅助触控</b>：开启后屏幕上多一个圆点，可以把它放在「立即购买」的位置，用另一只手连点。</li>
     <li><b>设置 → 通知 → 抖音</b>：允许通知。直播间开播/上架可能有推送。</li>
     <li><b>设置 → 显示与亮度 → 自动锁定</b>：改成「永不」，避免抢购时息屏。</li>
   </ul>
 
-  <h4>⑤ 用「快捷指令」做一键入口</h4>
+  <h4>⑥ 用「快捷指令」做一键入口</h4>
   <p>快捷指令 App → 新建 → 添加操作「打开 URL」→ 粘贴券链接 → 命名为「抢A券」→ 添加到主屏幕。</p>
   <p>这样桌面就有个按钮，<b>点一下直接进券页面</b>，比微信里翻聊天记录快得多。</p>
 
-  <h4>⑥ 时间一定要准</h4>
+  <h4>⑦ 时间一定要准</h4>
   <p>页面右上角会显示校时偏差。绿色（±300ms 内）就够用；显示黄色说明手机时间偏差大，去「设置 → 通用 → 日期与时间」打开「自动设置」。</p>
 
   <div class="okbox">
@@ -839,7 +1074,19 @@ function renderDoc(){
     券是有限的，几万人同时抢 1000 张，任何工具都不可能保证抢到。这套东西做的是：<b>让你不输在自己的操作速度上</b>——清除等待、清除找入口、清除输密码的时间。剩下的是运气和网络。
   </div>
 
-  <h4>⑦ 怎么加新的平台</h4>
+  <h4>⑧ 想全自动？需要一台安卓机</h4>
+  <p>iPhone 上做不到自动点击（系统不允许）。但如果你有<b>任意一台安卓手机</b>，可以做到
+  「自动循环进购物袋、自动判断有货、自动点立即购买」，<b>只有最后付款要你手动</b>。</p>
+  <p>电脑连上安卓机后运行 <code>android\启动抢购.bat</code>，脚本会：</p>
+  <ul>
+    <li>循环：开购物袋 → 点券 → 读按钮文字 → 有货就点购买 → 没货就返回重来</li>
+    <li>一轮约 1.5–2.5 秒，比手快一半以上</li>
+    <li>按音量键或输入 q 可以急停</li>
+    <li>到「提交订单」就停手，绝不代你付款</li>
+  </ul>
+  <p style="font-size:11px;color:var(--dim2)">脚本走的是官方 App + 官方网络，只是代替手指点屏幕上的真实按钮，不碰任何接口签名。</p>
+
+  <h4>⑨ 怎么加新的平台</h4>
   <p>新增时选对应平台即可。抖音、美团、点评、淘宝、京东、拼多多都支持短链识别。其他平台选「其他」，直接粘链接也能跳。</p>
 
   <button class="btn-full" onclick="closeSheet('shDoc')" style="margin-top:18px">知道了</button>`;
@@ -859,6 +1106,8 @@ document.querySelectorAll('nav button').forEach(b=>{
 /* ============ 启动 ============ */
 load();
 if(items.length&&!curId)curId=items[0].id;
+/* 调试：?beat=1 直接打开节拍台 */
+if(location.search.indexOf('beat=1')>=0){ setTimeout(function(){ openBeat(items[0]&&items[0].id); },400); }
 render();
 calibrate();
 setInterval(()=>{
