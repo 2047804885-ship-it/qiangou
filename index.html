@@ -559,9 +559,10 @@ function detectLink(quiet){
   else if(/jd\.com|3\.cn/i.test(v))plat='jd';
   else if(/yangkeduo|pinduoduo/i.test(v))plat='pdd';
   if(plat!==editPlat){editPlat=plat;renderPlatChips()}
-  const act=v.match(/activity_id=(\d+)/);
-  if(act)hint=`已识别活动 ID：<span style="color:var(--ok)">${act[1]}</span>`;
-  else if(v&&/^https?:/i.test(v))hint='短链已接受，点击时会自动跟随跳转';
+  let act=v.match(/activity_id=(\d+)/);
+  if(!act)act=v.match(/[?&](?:deal|shop|goods|sku)id=(\d+)/i);
+  if(act)hint=`已识别${PLATS[plat]?.name||''} ID：<span style="color:var(--ok)">${act[1]}</span>`;
+  else if(v&&/^https?:/i.test(v))hint='短链已接受 · 点击时自动跟随跳转直达';
   $('linkHint').innerHTML=hint;
   // 自动填名称
   if(!quiet&&!$('fName').value.trim()&&v){
@@ -579,8 +580,10 @@ function saveItem(){
   if(!tv){toast('请选择开抢时间');return}
   const time=new Date(tv).getTime();
   if(isNaN(time)){toast('时间格式不对');return}
+  const actMatch=link.match(/activity_id=(\d+)/)||link.match(/[?&](?:deal|shop|goods|sku)id=(\d+)/i);
+  const actId=actMatch?actMatch[1]:(editId?(items.find(x=>x.id===editId)||{}).actId||'':'');
   const obj={id:editId||('q'+Date.now()+Math.random().toString(36).slice(2,6)),
-    name,link,plat:editPlat,time,lead:Number($('fLead').value)||0,note:$('fNote').value.trim()};
+    name,link,plat:editPlat,time,lead:Number($('fLead').value)||0,note:$('fNote').value.trim(),actId};
   if(editId){const i=items.findIndex(x=>x.id===editId);items[i]=obj}
   else items.push(obj);
   save();
