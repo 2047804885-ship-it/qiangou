@@ -1,0 +1,19 @@
+{
+  "name": "抢购助手 · 秒级开抢控制台",
+  "short_name": "抢购助手",
+  "description": "秒级倒计时 + 一键直达，让下单不输在操作速度上",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
