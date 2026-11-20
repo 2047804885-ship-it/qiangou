@@ -45,7 +45,8 @@ window.PLATFORMS = {
     color: '#ffc300',
     scheme: 'imeituan://',
     webviewScheme: (url) => 'imeituan://www.meituan.com/web?url=' + encodeURIComponent(url),
-    accept: /meituan\.com|dianping\.com/i,
+    // 注意：不要吃掉 dianping.com
+    accept: /(^|\.)meituan\.com|(^|\.)meituan\.net|m\.meituan/i,
     extractId: (url) => {
       const m = url.match(/(?:deal|shop)id=(\d+)/i);
       return m ? m[1] : '';
@@ -60,8 +61,11 @@ window.PLATFORMS = {
     icon: '🟠',
     color: '#ff6633',
     scheme: 'dianping://',
-    accept: /dianping\.com/i,
-    extractId: (url) => '',
+    accept: /(^|\.)dianping\.com/i,
+    extractId: (url) => {
+      const m = url.match(/(?:deal|shop)id=(\d+)/i);
+      return m ? m[1] : '';
+    },
     prep: ['点评已登录', '绑定美团账号', '提前打开商品页'],
     steps: ['进入团购页', '点「立即抢购」', '提交订单']
   },
@@ -149,9 +153,21 @@ window.detectPlatform = function (url) {
   return 'other';
 };
 
-/** 解析出平台 + 活动 ID */
+/** 解析出平台 + 活动 ID
+ *  说明：v.douyin.com 短链本身不含 activity_id，需跟随 302 后才有。
+ *  因此这里同时接受「已解析的长链」；短链场景下 actId 为空，
+ *  由 index.html 里的 resolveShortLink() 异步补全后回写。
+ */
 window.parseLink = function (url) {
   const plat = window.detectPlatform(url);
   const p = window.PLATFORMS[plat];
   return { plat, actId: p.extractId(url) };
 };
+
+/** 从任意文本/URL 里粗提活动 ID（不区分平台，供短链补全后使用） */
+window.grabActId = function (url) {
+  if (!url) return '';
+  const m = url.match(/activity_id=(\d+)/) || url.match(/[?&](?:deal|shop|goods|sku)id=(\d+)/i);
+  return m ? m[1] : '';
+};
+
